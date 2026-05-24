@@ -530,35 +530,16 @@ function allThirds(pid=null){
   });
 }
 
-// FIFA 2026 official third-place bracket placement.
-// Each R32 M3 slot has a list of eligible groups (the groups whose 3rd can go there).
-// Among the 8 qualifying thirds, we assign the best available to each slot greedily.
-const M3_SLOT_GROUPS={
-  'r32c': ['A','B','C','D','F'],   // vs 1°E
-  'r32f': ['C','D','F','G','H'],   // vs 1°I
-  'r32g': ['C','E','F','H','I'],   // vs 1°A
-  'r32h': ['E','H','I','J','K'],   // vs 1°L
-  'r32i': ['A','E','H','I','J'],   // vs 1°G
-  'r32j': ['B','E','F','I','J'],   // vs 1°D
-  'r32m': ['E','F','G','I','J'],   // vs 1°B
-  'r32p': ['A','B','C','D','E','F','G','H','I','J','K','L'], // vs 1°K — any remaining
-};
-
-// Compute the full assignment of 8 best thirds to their R32 slots
-function computeM3Assignment(pid=null){
-  const thirds=allThirds(pid).slice(0,8); // top 8
-  const qualifiedGroups=new Set(thirds.map(t=>t.group));
-  const assignment={}; // slotId -> {team, group}
+// Single source of truth for M3 slot assignment — used by bracket AND M3 view
+// M3_SLOTS_DEF is defined later but hoisted via function call at runtime
+function getM3Assignment(pid=null){
+  const thirds=allThirds(pid).slice(0,8);
   const used=new Set();
-
-  // Assign in slot order, best available third that fits each slot's eligible groups
-  const slots=Object.keys(M3_SLOT_GROUPS);
-  for(const slot of slots){
-    const eligible=M3_SLOT_GROUPS[slot];
-    // Find best (highest ranked) unused third whose group is eligible
-    const match=thirds.find(t=>!used.has(t.group)&&eligible.includes(t.group));
+  const assignment={};
+  for(const slot of M3_SLOTS_DEF){
+    const match=thirds.find(t=>!used.has(t.group)&&slot.eligibleGrps.includes(t.group));
     if(match){
-      assignment[slot]={team:match.team,group:match.group};
+      assignment[slot.id]={team:match.team,group:match.group};
       used.add(match.group);
     }
   }
@@ -566,12 +547,11 @@ function computeM3Assignment(pid=null){
 }
 
 function getBestThird(slotId,pid=null){
-  const assignment=computeM3Assignment(pid);
+  const assignment=getM3Assignment(pid);
   if(assignment[slotId]){
     const {team,group}=assignment[slotId];
     return {team,pos:`3°${group}`};
   }
-  // Not enough thirds computed yet (groups not finished)
   return {team:null,pos:'Mejor 3°'};
 }
 
@@ -785,22 +765,6 @@ function fpScore(team){
   return (fp.y||0)*-1 + (fp.yr||0)*-5 + (fp.r||0)*-4 + (fp.ry||0)*-3;
 }
 
-function allThirdsRanked(pid=null){
-  return Object.keys(GROUPS).map(grp=>{
-    const s=standing(grp,pid);
-    const t=s[2];
-    if(!t)return null;
-    const fp=fpScore(t.team);
-    return {team:t.team,group:grp,pts:t.pts,dg:t.dg,gf:t.gf,fp};
-  }).filter(Boolean).sort((a,b)=>{
-    if(b.pts!==a.pts)return b.pts-a.pts;
-    if(b.dg!==a.dg)return b.dg-a.dg;
-    if(b.gf!==a.gf)return b.gf-a.gf;
-    if(b.fp!==a.fp)return b.fp-a.fp; // higher (less negative) = better fair play
-    return a.group.localeCompare(b.group);
-  });
-}
-
 const M3_SLOTS_DEF=[
   {id:'r32c',rival:'1°E',eligibleGrps:['A','B','C','D','F'],desc:'Grupos A,B,C,D,F'},
   {id:'r32f',rival:'1°I',eligibleGrps:['C','D','F','G','H'],desc:'Grupos C,D,F,G,H'},
@@ -812,31 +776,28 @@ const M3_SLOTS_DEF=[
   {id:'r32p',rival:'1°K',eligibleGrps:['A','B','C','D','E','F','G','H','I','J','K','L'],desc:'Cualquier grupo (comodín)'},
 ];
 
-function computeM3Assignment(pid=null){
-  const thirds=allThirdsRanked(pid);
+function computeM3Steps(pid=null){
+  // Returns full step trace for the M3 view — uses same ranking as getM3Assignment
+  const thirds=allThirds(pid);
   const top8=thirds.slice(0,8);
   const used=new Set();
   const result=[];
   for(const slot of M3_SLOTS_DEF){
-    const steps=[];
-    let assigned=null;
+    const steps=[];let assigned=null;
     for(const t of top8){
       if(used.has(t.group)){steps.push({...t,status:'used'});continue;}
       if(!slot.eligibleGrps.includes(t.group)){steps.push({...t,status:'skip'});continue;}
-      steps.push({...t,status:'ok'});
-      assigned=t;
-      used.add(t.group);
-      break;
+      steps.push({...t,status:'ok'});assigned=t;used.add(t.group);break;
     }
     result.push({slot,steps,assigned});
   }
-  return {thirds,top8,slots:result};
+  return {thirds,slots:result};
 }
 
 function renderM3View(){
   const container=document.getElementById('torneo-m3-wrap');
   if(!container)return;
-  const {thirds,top8,slots}=computeM3Assignment();
+  const {thirds,slots}=computeM3Steps();
 
   // ── Tabla ranking ──
   let html=`<div class="fp-legend">
@@ -927,21 +888,7 @@ function saveFP(team,card,val){
 function renderM3ViewPred(pid){
   const container=document.getElementById('pred-m3-view');
   if(!container)return;
-
-  // Compute thirds using pred results (no FP for predictions)
-  const thirds=allThirds(pid);
-  const top8=thirds.slice(0,8);
-  const used=new Set();
-  const slots=[];
-  for(const slot of M3_SLOTS_DEF){
-    const steps=[];let assigned=null;
-    for(const t of top8){
-      if(used.has(t.group)){steps.push({...t,status:'used'});continue;}
-      if(!slot.eligibleGrps.includes(t.group)){steps.push({...t,status:'skip'});continue;}
-      steps.push({...t,status:'ok'});assigned=t;used.add(t.group);break;
-    }
-    slots.push({slot,steps,assigned});
-  }
+  const {thirds,slots}=computeM3Steps(pid);
 
   let html=`<div class="fp-legend" style="background:#f0fdf4;border-color:#a7f3d0">
     <strong style="color:#065f46">🔮 Vista de predicción</strong> — Los mejores terceros se calculan con tus resultados predichos. El fair play no se aplica en predicciones.
