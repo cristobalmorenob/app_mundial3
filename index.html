@@ -88,6 +88,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .bk-team.sim .bk-score{color:var(--yellow);}
 .bk-date{font-size:6px;color:#ccc;text-align:center;padding:2px 0;}
 .scroll-hint-x{font-size:8px;color:var(--gray);text-align:center;padding:4px 0;letter-spacing:1px;flex-shrink:0;}
+
+/* ── MEJORES TERCEROS ── */
+.m3-section-title{font-size:11px;font-weight:700;color:var(--navy);letter-spacing:1px;margin:14px 0 8px;display:flex;align-items:center;gap:6px;}
+.m3-section-title::after{content:'';flex:1;height:1px;background:var(--gray-border);}
+.m3-table{width:100%;border-collapse:collapse;background:var(--white);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--gray-border);margin-bottom:16px;}
+.m3-table th{font-size:8px;color:var(--gray);font-weight:600;letter-spacing:1px;padding:6px 5px;text-align:center;border-bottom:1px solid var(--gray-border);background:#fafbfc;}
+.m3-table th:first-child{text-align:left;padding-left:10px;}
+.m3-table td{font-size:10px;padding:7px 5px;text-align:center;border-bottom:1px solid var(--gray-border);}
+.m3-table td:first-child{text-align:left;padding-left:8px;}
+.m3-table tr:last-child td{border-bottom:none;}
+.m3-table tr.m3-qualify td{background:#f0fdf4;}
+.m3-table tr.m3-out td{background:#fafafa;opacity:.7;}
+.m3-rank{font-weight:700;color:var(--gray);font-size:10px;}
+.m3-pts{font-weight:700;color:var(--red);}
+.m3-fp-cell{display:flex;align-items:center;justify-content:center;gap:3px;}
+.fp-input{width:28px;height:22px;border:1px solid var(--gray-border);border-radius:4px;font-size:10px;text-align:center;background:var(--gray-light);color:var(--navy);-webkit-appearance:none;}
+.fp-input:focus{outline:none;border-color:var(--yellow);background:white;}
+.fp-score{font-size:9px;font-weight:700;color:var(--sim-text);min-width:22px;text-align:center;}
+.fp-legend{font-size:9px;color:var(--gray);background:var(--white);border-radius:8px;padding:8px 12px;border:1px solid var(--gray-border);margin-bottom:14px;line-height:1.6;}
+.m3-slot-card{background:var(--white);border-radius:10px;border:1px solid var(--gray-border);padding:10px 12px;margin-bottom:8px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.m3-slot-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+.m3-slot-id{background:var(--navy);color:white;font-size:8px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:1px;}
+.m3-slot-rival{font-size:11px;font-weight:700;color:var(--navy);}
+.m3-slot-eligible{font-size:9px;color:var(--gray);margin-bottom:6px;}
+.m3-iter-row{display:flex;align-items:center;gap:6px;padding:3px 0;border-bottom:1px solid #f5f5f5;}
+.m3-iter-row:last-child{border:none;}
+.m3-iter-rank{font-size:9px;color:#bbb;width:16px;flex-shrink:0;}
+.m3-iter-flag{font-size:13px;flex-shrink:0;}
+.m3-iter-name{font-size:10px;flex:1;color:var(--navy);}
+.m3-iter-name.used{color:#ccc;text-decoration:line-through;}
+.m3-iter-status{font-size:9px;font-weight:600;flex-shrink:0;}
+.m3-iter-status.ok{color:var(--green);}
+.m3-iter-status.skip{color:var(--red);}
+.m3-iter-status.used{color:#ccc;}
+.m3-result{margin-top:6px;padding:6px 8px;background:var(--green-light,#ecfdf5);border-radius:6px;font-size:10px;font-weight:600;color:#065f46;border:1px solid #a7f3d0;}
+.m3-result.tbd{background:#fafafa;color:var(--gray);border-color:var(--gray-border);}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:flex-end;justify-content:center;}
 .modal-overlay.open{display:flex;}
 .modal-sheet{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:480px;padding-bottom:env(safe-area-inset-bottom,16px);animation:slideUp .25s ease;}
@@ -192,7 +228,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="scroll-hint-x">← Desliza para ver todas las fases →</div>
       <div class="bracket-outer"><div class="bracket-inner" id="torneo-bracket"></div></div>
     </div>
-    <div id="torneo-fixture-wrap" class="scroll-body" style="display:none;padding:12px" id="torneo-fixture"></div>
+    <div id="torneo-fixture-wrap" class="scroll-body" style="display:none;padding:12px"></div>
+    <div id="torneo-m3-wrap" class="scroll-body" style="display:none;padding:12px" id="torneo-m3"></div>
   </div>
   <!-- PRED -->
   <div id="view-pred" class="view">
@@ -212,6 +249,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="sub-tabs" id="pred-sub-tabs">
         <button class="sub-tab active" onclick="setPredTab('grupos')">⚽ Grupos</button>
         <button class="sub-tab" onclick="setPredTab('bracket')">🏆 Llave</button>
+        <button class="sub-tab" onclick="setPredTab('m3')">🟡 Mejores 3°</button>
         <button class="sub-tab" onclick="setPredTab('fixture')">📋 Fixture</button>
       </div>
       <div id="pred-grupos-view" class="scroll-body" style="padding:12px"></div>
@@ -219,6 +257,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="scroll-hint-x">← Desliza para ver todas las fases →</div>
         <div class="bracket-outer"><div class="bracket-inner" id="pred-bracket"></div></div>
       </div>
+      <div id="pred-m3-view" class="scroll-body" style="display:none;padding:12px"></div>
       <div id="pred-fixture-view" class="scroll-body" style="display:none;padding:12px"></div>
     </div>
   </div>
@@ -468,12 +507,83 @@ function h2h(teams,grp,pid){
 }
 function teamAt(grp,pos,pid=null){const s=standing(grp,pid);return s[pos-1]?s[pos-1].team:null;}
 
+// Fair play score (used for M3 tiebreaker — only in official torneo, not predictions)
+function fpScore(team){
+  const fp=(ST.fairplay||{})[team]||{y:0,r:0,yr:0,ry:0};
+  return (fp.y||0)*-1+(fp.yr||0)*-5+(fp.r||0)*-4+(fp.ry||0)*-3;
+}
+
+// ── BEST THIRDS ───────────────────────────────────
+function allThirds(pid=null){
+  return Object.keys(GROUPS).map(grp=>{
+    const s=standing(grp,pid);
+    const t=s[2];
+    if(!t)return null;
+    const fp=pid?0:fpScore(t.team);
+    return {team:t.team,group:grp,pts:t.pts,dg:t.dg,gf:t.gf,fp};
+  }).filter(Boolean).sort((a,b)=>{
+    if(b.pts!==a.pts)return b.pts-a.pts;
+    if(b.dg!==a.dg)return b.dg-a.dg;
+    if(b.gf!==a.gf)return b.gf-a.gf;
+    if((b.fp||0)!==(a.fp||0))return (b.fp||0)-(a.fp||0);
+    return a.group.localeCompare(b.group);
+  });
+}
+
+// FIFA 2026 official third-place bracket placement.
+// Each R32 M3 slot has a list of eligible groups (the groups whose 3rd can go there).
+// Among the 8 qualifying thirds, we assign the best available to each slot greedily.
+const M3_SLOT_GROUPS={
+  'r32c': ['A','B','C','D','F'],   // vs 1°E
+  'r32f': ['C','D','F','G','H'],   // vs 1°I
+  'r32g': ['C','E','F','H','I'],   // vs 1°A
+  'r32h': ['E','H','I','J','K'],   // vs 1°L
+  'r32i': ['A','E','H','I','J'],   // vs 1°G
+  'r32j': ['B','E','F','I','J'],   // vs 1°D
+  'r32m': ['E','F','G','I','J'],   // vs 1°B
+  'r32p': ['A','B','C','D','E','F','G','H','I','J','K','L'], // vs 1°K — any remaining
+};
+
+// Compute the full assignment of 8 best thirds to their R32 slots
+function computeM3Assignment(pid=null){
+  const thirds=allThirds(pid).slice(0,8); // top 8
+  const qualifiedGroups=new Set(thirds.map(t=>t.group));
+  const assignment={}; // slotId -> {team, group}
+  const used=new Set();
+
+  // Assign in slot order, best available third that fits each slot's eligible groups
+  const slots=Object.keys(M3_SLOT_GROUPS);
+  for(const slot of slots){
+    const eligible=M3_SLOT_GROUPS[slot];
+    // Find best (highest ranked) unused third whose group is eligible
+    const match=thirds.find(t=>!used.has(t.group)&&eligible.includes(t.group));
+    if(match){
+      assignment[slot]={team:match.team,group:match.group};
+      used.add(match.group);
+    }
+  }
+  return assignment;
+}
+
+function getBestThird(slotId,pid=null){
+  const assignment=computeM3Assignment(pid);
+  if(assignment[slotId]){
+    const {team,group}=assignment[slotId];
+    return {team,pos:`3°${group}`};
+  }
+  // Not enough thirds computed yet (groups not finished)
+  return {team:null,pos:'Mejor 3°'};
+}
+
 // ── KO SLOT RESOLVER ──────────────────────────────
-// Returns {team, posLabel} for a slot string like "1A","2B","W-r32a","L-sf1","M3"
-function resolveSlot(slotStr,pid=null){
+// Returns {team, pos} for a slot string. parentMatchId needed to resolve M3 rank.
+function resolveSlot(slotStr,pid=null,parentMatchId=null){
   const gm=slotStr.match(/^([123])([A-L])$/);
   if(gm){const t=teamAt(gm[2],+gm[1],pid);return {team:t,pos:`${gm[1]}°${gm[2]}`};}
-  if(slotStr==='M3')return {team:null,pos:'Mejor 3°'};
+  if(slotStr==='M3'){
+    // Use parentMatchId to determine which ranked best-third goes here
+    return getBestThird(parentMatchId,pid);
+  }
   const wl=slotStr.match(/^([WL])-(.+)$/);
   if(wl){
     const matchId=wl[2],side=wl[1];
@@ -483,9 +593,8 @@ function resolveSlot(slotStr,pid=null){
     if(!hasSc(r)){return {team:null,pos:(side==='W'?'W ':'L ')+km.label};}
     const {homeTeam,awayTeam}=resolveKOTeams(km,pid);
     const hs=+r.hs,as=+r.as;
-    // If draw in KO, use penalty winner
     if(hs===as){
-      if(!r.pw) return {team:null,pos:(side==='W'?'W ':'L ')+km.label}; // pen not set yet
+      if(!r.pw) return {team:null,pos:(side==='W'?'W ':'L ')+km.label};
       const hWins=r.pw==='home';
       if(side==='W') return {team:hWins?homeTeam:awayTeam,pos:''};
       return {team:hWins?awayTeam:homeTeam,pos:''};
@@ -498,7 +607,7 @@ function resolveSlot(slotStr,pid=null){
 function resolveKOTeams(match,pid=null){
   const i=match.slot.indexOf('-vs-');
   const sh=match.slot.slice(0,i),sa=match.slot.slice(i+4);
-  const h=resolveSlot(sh,pid),a=resolveSlot(sa,pid);
+  const h=resolveSlot(sh,pid,match.id),a=resolveSlot(sa,pid,match.id);
   return {homeTeam:h.team,homePos:h.pos,awayTeam:a.team,awayPos:a.pos};
 }
 
@@ -653,16 +762,242 @@ function renderGrupos(pid=null){
 function buildTorneoTabs(){
   document.getElementById('torneo-tabs').innerHTML=
     `<button class="sub-tab${torneoTab==='bracket'?' active':''}" onclick="setTorneoTab('bracket')">🏆 Llave</button>
+     <button class="sub-tab${torneoTab==='m3'?' active':''}" onclick="setTorneoTab('m3')">🟡 Mejores 3°</button>
      <button class="sub-tab${torneoTab==='fixture'?' active':''}" onclick="setTorneoTab('fixture')">📋 Fixture</button>`;
 }
 function setTorneoTab(t){
   torneoTab=t;buildTorneoTabs();
   document.getElementById('torneo-bracket-wrap').style.display=t==='bracket'?'flex':'none';
   document.getElementById('torneo-fixture-wrap').style.display=t==='fixture'?'block':'none';
+  document.getElementById('torneo-m3-wrap').style.display=t==='m3'?'block':'none';
   if(t==='bracket')renderBracket('torneo-bracket');
-  else document.getElementById('torneo-fixture-wrap').innerHTML=fixtureHTML(ALL);
+  else if(t==='fixture')document.getElementById('torneo-fixture-wrap').innerHTML=fixtureHTML(ALL);
+  else if(t==='m3')renderM3View();
 }
 function renderTorneo(){buildTorneoTabs();renderBracket('torneo-bracket');}
+
+// ── VIEW: MEJORES TERCEROS ─────────────────────────
+// Fair play weights (FIFA official)
+// ST.fairplay = { 'México': {y:2, yr:0, r:0, ry:0} }
+// y=yellow(-1), yr=yellow+red(-5), r=red direct(-4), ry=red after 2y(-3)
+function fpScore(team){
+  const fp=(ST.fairplay||{})[team]||{y:0,yr:0,r:0,ry:0};
+  return (fp.y||0)*-1 + (fp.yr||0)*-5 + (fp.r||0)*-4 + (fp.ry||0)*-3;
+}
+
+function allThirdsRanked(pid=null){
+  return Object.keys(GROUPS).map(grp=>{
+    const s=standing(grp,pid);
+    const t=s[2];
+    if(!t)return null;
+    const fp=fpScore(t.team);
+    return {team:t.team,group:grp,pts:t.pts,dg:t.dg,gf:t.gf,fp};
+  }).filter(Boolean).sort((a,b)=>{
+    if(b.pts!==a.pts)return b.pts-a.pts;
+    if(b.dg!==a.dg)return b.dg-a.dg;
+    if(b.gf!==a.gf)return b.gf-a.gf;
+    if(b.fp!==a.fp)return b.fp-a.fp; // higher (less negative) = better fair play
+    return a.group.localeCompare(b.group);
+  });
+}
+
+const M3_SLOTS_DEF=[
+  {id:'r32c',rival:'1°E',eligibleGrps:['A','B','C','D','F'],desc:'Grupos A,B,C,D,F'},
+  {id:'r32f',rival:'1°I',eligibleGrps:['C','D','F','G','H'],desc:'Grupos C,D,F,G,H'},
+  {id:'r32g',rival:'1°A',eligibleGrps:['C','E','F','H','I'],desc:'Grupos C,E,F,H,I'},
+  {id:'r32h',rival:'1°L',eligibleGrps:['E','H','I','J','K'],desc:'Grupos E,H,I,J,K'},
+  {id:'r32i',rival:'1°G',eligibleGrps:['A','E','H','I','J'],desc:'Grupos A,E,H,I,J'},
+  {id:'r32j',rival:'1°D',eligibleGrps:['B','E','F','I','J'],desc:'Grupos B,E,F,I,J'},
+  {id:'r32m',rival:'1°B',eligibleGrps:['E','F','G','I','J'],desc:'Grupos E,F,G,I,J'},
+  {id:'r32p',rival:'1°K',eligibleGrps:['A','B','C','D','E','F','G','H','I','J','K','L'],desc:'Cualquier grupo (comodín)'},
+];
+
+function computeM3Assignment(pid=null){
+  const thirds=allThirdsRanked(pid);
+  const top8=thirds.slice(0,8);
+  const used=new Set();
+  const result=[];
+  for(const slot of M3_SLOTS_DEF){
+    const steps=[];
+    let assigned=null;
+    for(const t of top8){
+      if(used.has(t.group)){steps.push({...t,status:'used'});continue;}
+      if(!slot.eligibleGrps.includes(t.group)){steps.push({...t,status:'skip'});continue;}
+      steps.push({...t,status:'ok'});
+      assigned=t;
+      used.add(t.group);
+      break;
+    }
+    result.push({slot,steps,assigned});
+  }
+  return {thirds,top8,slots:result};
+}
+
+function renderM3View(){
+  const container=document.getElementById('torneo-m3-wrap');
+  if(!container)return;
+  const {thirds,top8,slots}=computeM3Assignment();
+
+  // ── Tabla ranking ──
+  let html=`<div class="fp-legend">
+    <strong>Fair play FIFA:</strong> 🟡 Amarilla = -1 pt &nbsp;|&nbsp; 🟥 Roja directa = -4 pts &nbsp;|&nbsp; 🟡🟥 Amarilla+Roja = -5 pts &nbsp;|&nbsp; 🟡🟡 Doble amarilla (roja ind.) = -3 pts<br>
+    <span style="color:var(--gray);font-size:8px">Solo se usa si hay empate en pts, DG y GF. Edita las tarjetas directamente en la tabla.</span>
+  </div>`;
+
+  html+=`<div class="m3-section-title">Ranking de los 12 terceros</div>`;
+  html+=`<table class="m3-table"><thead><tr>
+    <th>#</th><th>Equipo</th><th>PTS</th><th>DG</th><th>GF</th>
+    <th title="Amarillas">🟡</th><th title="Roja directa">🟥</th><th title="Amarilla+Roja">🟡🟥</th><th title="Doble amarilla">🟡🟡</th>
+    <th>FP</th><th>Estado</th>
+  </tr></thead><tbody>`;
+
+  thirds.forEach((t,i)=>{
+    const qualifies=i<8;
+    const fp=(ST.fairplay||{})[t.team]||{y:0,r:0,yr:0,ry:0};
+    const fpVal=fpScore(t.team);
+    const dg=t.dg>=0?`+${t.dg}`:t.dg;
+    html+=`<tr class="${qualifies?'m3-qualify':'m3-out'}">
+      <td class="m3-rank">${i+1}</td>
+      <td><div class="team-cell" style="gap:4px">
+        ${qualifies?'<div class="pos-dot adv"></div>':'<div class="pos-dot out"></div>'}
+        <span style="font-size:13px">${fl(t.team)}</span>
+        <span style="font-size:10px;font-weight:600">${t.team}</span>
+        <span style="font-size:9px;color:var(--gray)">(3°${t.group})</span>
+      </div></td>
+      <td class="m3-pts">${t.pts}</td>
+      <td style="color:${t.dg>=0?'var(--green)':'var(--red)'}">${dg}</td>
+      <td>${t.gf}</td>
+      <td><input class="fp-input" type="number" min="0" max="20" value="${fp.y||0}" onchange="saveFP('${t.team}','y',this.value)" onclick="this.select()"></td>
+      <td><input class="fp-input" type="number" min="0" max="10" value="${fp.r||0}" onchange="saveFP('${t.team}','r',this.value)" onclick="this.select()"></td>
+      <td><input class="fp-input" type="number" min="0" max="10" value="${fp.yr||0}" onchange="saveFP('${t.team}','yr',this.value)" onclick="this.select()"></td>
+      <td><input class="fp-input" type="number" min="0" max="10" value="${fp.ry||0}" onchange="saveFP('${t.team}','ry',this.value)" onclick="this.select()"></td>
+      <td class="fp-score" style="color:${fpVal<0?'var(--red)':'var(--gray)'}">${fpVal}</td>
+      <td style="font-size:9px;font-weight:700;color:${qualifies?'var(--green)':'#bbb'}">${qualifies?'✅ Clasifica':'❌'}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+
+  // ── Iteración por slot ──
+  html+=`<div class="m3-section-title">Asignación en la Ronda de 32</div>`;
+
+  for(const {slot,steps,assigned} of slots){
+    // Get rival team name
+    const rivalGroup=slot.rival.replace('1°','');
+    const rivalTeam=standing(rivalGroup)[0]?.team||slot.rival;
+    html+=`<div class="m3-slot-card">
+      <div class="m3-slot-header">
+        <span class="m3-slot-id">${slot.id.toUpperCase()}</span>
+        <span class="m3-slot-rival">vs ${slot.rival} — ${fl(rivalTeam)} ${rivalTeam}</span>
+      </div>
+      <div class="m3-slot-eligible">Acepta terceros de: ${slot.desc}</div>`;
+
+    for(const step of steps){
+      let statusIcon,statusText,nameClass='';
+      if(step.status==='used'){statusIcon='⏭';statusText='ya asignado';nameClass='used';}
+      else if(step.status==='skip'){statusIcon='❌';statusText=`grupo ${step.group} no elegible`;}
+      else{statusIcon='✅';statusText=`grupo ${step.group} elegible → ASIGNADO`;}
+      html+=`<div class="m3-iter-row">
+        <span class="m3-iter-rank">${thirds.findIndex(x=>x.team===step.team)+1}°</span>
+        <span class="m3-iter-flag">${fl(step.team)}</span>
+        <span class="m3-iter-name ${nameClass}">${step.team} <span style="color:#aaa;font-size:8px">(3°${step.group}, ${step.pts}pts)</span></span>
+        <span class="m3-iter-status ${step.status}">${statusIcon} ${statusText}</span>
+      </div>`;
+    }
+
+    if(assigned){
+      html+=`<div class="m3-result">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}</div>`;
+    }else{
+      html+=`<div class="m3-result tbd">→ Sin asignar (faltan resultados de grupos)</div>`;
+    }
+    html+=`</div>`;
+  }
+
+  container.innerHTML=html;
+}
+
+function saveFP(team,card,val){
+  if(!ST.fairplay)ST.fairplay={};
+  if(!ST.fairplay[team])ST.fairplay[team]={y:0,r:0,yr:0,ry:0};
+  ST.fairplay[team][card]=parseInt(val)||0;
+  save();
+  renderM3View();
+}
+
+// M3 view for predictions — read-only, no FP inputs, uses pred results
+function renderM3ViewPred(pid){
+  const container=document.getElementById('pred-m3-view');
+  if(!container)return;
+
+  // Compute thirds using pred results (no FP for predictions)
+  const thirds=allThirds(pid);
+  const top8=thirds.slice(0,8);
+  const used=new Set();
+  const slots=[];
+  for(const slot of M3_SLOTS_DEF){
+    const steps=[];let assigned=null;
+    for(const t of top8){
+      if(used.has(t.group)){steps.push({...t,status:'used'});continue;}
+      if(!slot.eligibleGrps.includes(t.group)){steps.push({...t,status:'skip'});continue;}
+      steps.push({...t,status:'ok'});assigned=t;used.add(t.group);break;
+    }
+    slots.push({slot,steps,assigned});
+  }
+
+  let html=`<div class="fp-legend" style="background:#f0fdf4;border-color:#a7f3d0">
+    <strong style="color:#065f46">🔮 Vista de predicción</strong> — Los mejores terceros se calculan con tus resultados predichos. El fair play no se aplica en predicciones.
+  </div>`;
+
+  html+=`<div class="m3-section-title">Ranking de los 12 terceros</div>`;
+  html+=`<table class="m3-table"><thead><tr>
+    <th>#</th><th>Equipo</th><th>PTS</th><th>DG</th><th>GF</th><th>Estado</th>
+  </tr></thead><tbody>`;
+  thirds.forEach((t,i)=>{
+    const q=i<8;
+    const dg=t.dg>=0?`+${t.dg}`:t.dg;
+    html+=`<tr class="${q?'m3-qualify':'m3-out'}">
+      <td class="m3-rank">${i+1}</td>
+      <td><div class="team-cell" style="gap:4px">
+        ${q?'<div class="pos-dot adv"></div>':'<div class="pos-dot out"></div>'}
+        <span style="font-size:13px">${fl(t.team)}</span>
+        <span style="font-size:10px;font-weight:600">${t.team}</span>
+        <span style="font-size:9px;color:var(--gray)">(3°${t.group})</span>
+      </div></td>
+      <td class="m3-pts">${t.pts}</td>
+      <td style="color:${t.dg>=0?'var(--green)':'var(--red)'}">${dg}</td>
+      <td>${t.gf}</td>
+      <td style="font-size:9px;font-weight:700;color:${q?'var(--green)':'#bbb'}">${q?'✅':'❌'}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+
+  html+=`<div class="m3-section-title">Asignación en la Ronda de 32</div>`;
+  for(const {slot,steps,assigned} of slots){
+    const rivalGroup=slot.rival.replace('1°','');
+    const rivalTeam=standing(rivalGroup,pid)[0]?.team||slot.rival;
+    html+=`<div class="m3-slot-card">
+      <div class="m3-slot-header">
+        <span class="m3-slot-id">${slot.id.toUpperCase()}</span>
+        <span class="m3-slot-rival">vs ${slot.rival} — ${fl(rivalTeam)} ${rivalTeam}</span>
+      </div>
+      <div class="m3-slot-eligible">Acepta: ${slot.desc}</div>`;
+    for(const step of steps){
+      let icon,txt,nc='';
+      if(step.status==='used'){icon='⏭';txt='ya asignado';nc='used';}
+      else if(step.status==='skip'){icon='❌';txt=`grupo ${step.group} no elegible`;}
+      else{icon='✅';txt=`grupo ${step.group} elegible → ASIGNADO`;}
+      html+=`<div class="m3-iter-row">
+        <span class="m3-iter-rank">${thirds.findIndex(x=>x.team===step.team)+1}°</span>
+        <span class="m3-iter-flag">${fl(step.team)}</span>
+        <span class="m3-iter-name ${nc}">${step.team} <span style="color:#aaa;font-size:8px">(3°${step.group}, ${step.pts}pts)</span></span>
+        <span class="m3-iter-status ${step.status}">${icon} ${txt}</span>
+      </div>`;
+    }
+    if(assigned) html+=`<div class="m3-result">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}</div>`;
+    else html+=`<div class="m3-result tbd">→ Sin asignar (faltan resultados)</div>`;
+    html+=`</div>`;
+  }
+  container.innerHTML=html;
+}
 
 // ── VIEW: PREDICCIONES ────────────────────────────
 function renderPredList(){
@@ -702,12 +1037,14 @@ function closePredActive(){
 }
 function setPredTab(t){
   predTab=t;
-  document.querySelectorAll('#pred-sub-tabs .sub-tab').forEach((b,i)=>{b.classList.toggle('active',['grupos','bracket','fixture'][i]===t);});
+  document.querySelectorAll('#pred-sub-tabs .sub-tab').forEach((b,i)=>{b.classList.toggle('active',['grupos','bracket','m3','fixture'][i]===t);});
   document.getElementById('pred-grupos-view').style.display=t==='grupos'?'block':'none';
   document.getElementById('pred-bracket-wrap').style.display=t==='bracket'?'flex':'none';
+  document.getElementById('pred-m3-view').style.display=t==='m3'?'block':'none';
   document.getElementById('pred-fixture-view').style.display=t==='fixture'?'block':'none';
   if(t==='grupos') document.getElementById('pred-grupos-view').innerHTML=Object.keys(GROUPS).map(g=>groupHTML(g,predId)).join('');
   else if(t==='bracket') renderBracket('pred-bracket',predId);
+  else if(t==='m3') renderM3ViewPred(predId);
   else document.getElementById('pred-fixture-view').innerHTML=fixtureHTML(ALL,predId);
 }
 
@@ -797,8 +1134,17 @@ function clearResult(){
 function refresh(){
   if(currentTab==='hoy')renderHoy();
   else if(currentTab==='grupos'){buildGruposTabs();const grps=grupoFilter==='ALL'?Object.keys(GROUPS):[grupoFilter];document.getElementById('grupos-body').innerHTML=grps.map(g=>groupHTML(g)).join('');}
-  else if(currentTab==='torneo'){if(torneoTab==='bracket')renderBracket('torneo-bracket');else document.getElementById('torneo-fixture-wrap').innerHTML=fixtureHTML(ALL);}
-  else if(currentTab==='pred'){if(predId){if(predTab==='grupos')document.getElementById('pred-grupos-view').innerHTML=Object.keys(GROUPS).map(g=>groupHTML(g,predId)).join('');else if(predTab==='bracket')renderBracket('pred-bracket',predId);else document.getElementById('pred-fixture-view').innerHTML=fixtureHTML(ALL,predId);}else renderPredList();}
+  else if(currentTab==='torneo'){
+    if(torneoTab==='bracket')renderBracket('torneo-bracket');
+    else if(torneoTab==='fixture')document.getElementById('torneo-fixture-wrap').innerHTML=fixtureHTML(ALL);
+    else if(torneoTab==='m3')renderM3View();
+  }
+  else if(currentTab==='pred'){if(predId){
+    if(predTab==='grupos')document.getElementById('pred-grupos-view').innerHTML=Object.keys(GROUPS).map(g=>groupHTML(g,predId)).join('');
+    else if(predTab==='bracket')renderBracket('pred-bracket',predId);
+    else if(predTab==='m3')renderM3ViewPred(predId);
+    else document.getElementById('pred-fixture-view').innerHTML=fixtureHTML(ALL,predId);
+  }else renderPredList();}
 }
 
 // ── TAB SWITCHING ─────────────────────────────────
