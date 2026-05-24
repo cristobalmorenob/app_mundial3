@@ -531,15 +531,18 @@ function allThirds(pid=null){
 }
 
 // Single source of truth for M3 slot assignment — used by bracket AND M3 view
-// M3_SLOTS_DEF is defined later but hoisted via function call at runtime
 function getM3Assignment(pid=null){
-  const thirds=allThirds(pid).slice(0,8);
+  const thirds=allThirds(pid);
+  const top8=thirds.slice(0,8);
   const used=new Set();
   const assignment={};
   for(const slot of M3_SLOTS_DEF){
-    const match=thirds.find(t=>!used.has(t.group)&&slot.eligibleGrps.includes(t.group));
+    // First try: best available that fits eligible groups
+    let match=thirds.find(t=>!used.has(t.group)&&slot.eligibleGrps.includes(t.group));
+    // Fallback: if no eligible found among top8, take best remaining (any group)
+    if(!match) match=thirds.find(t=>!used.has(t.group));
     if(match){
-      assignment[slot.id]={team:match.team,group:match.group};
+      assignment[slot.id]={team:match.team,group:match.group,fallback:!slot.eligibleGrps.includes(match.group)};
       used.add(match.group);
     }
   }
@@ -766,30 +769,44 @@ function fpScore(team){
 }
 
 const M3_SLOTS_DEF=[
-  {id:'r32c',rival:'1°E',eligibleGrps:['A','B','C','D','F'],desc:'Grupos A,B,C,D,F'},
-  {id:'r32f',rival:'1°I',eligibleGrps:['C','D','F','G','H'],desc:'Grupos C,D,F,G,H'},
-  {id:'r32g',rival:'1°A',eligibleGrps:['C','E','F','H','I'],desc:'Grupos C,E,F,H,I'},
-  {id:'r32h',rival:'1°L',eligibleGrps:['E','H','I','J','K'],desc:'Grupos E,H,I,J,K'},
-  {id:'r32i',rival:'1°G',eligibleGrps:['A','E','H','I','J'],desc:'Grupos A,E,H,I,J'},
-  {id:'r32j',rival:'1°D',eligibleGrps:['B','E','F','I','J'],desc:'Grupos B,E,F,I,J'},
-  {id:'r32m',rival:'1°B',eligibleGrps:['E','F','G','I','J'],desc:'Grupos E,F,G,I,J'},
-  {id:'r32p',rival:'1°K',eligibleGrps:['A','B','C','D','E','F','G','H','I','J','K','L'],desc:'Cualquier grupo (comodín)'},
+  {id:'r32c',rival:'1°E',eligibleGrps:['A','B','C','D','F'],        desc:'Grupos A,B,C,D,F'},
+  {id:'r32f',rival:'1°I',eligibleGrps:['C','D','F','G','H'],        desc:'Grupos C,D,F,G,H'},
+  {id:'r32g',rival:'1°A',eligibleGrps:['C','E','F','H','I'],        desc:'Grupos C,E,F,H,I'},
+  {id:'r32h',rival:'1°L',eligibleGrps:['E','H','I','J','K'],        desc:'Grupos E,H,I,J,K'},
+  {id:'r32i',rival:'1°G',eligibleGrps:['A','E','H','I','J'],        desc:'Grupos A,E,H,I,J'},
+  {id:'r32j',rival:'1°D',eligibleGrps:['B','E','F','I','J'],        desc:'Grupos B,E,F,I,J'},
+  {id:'r32m',rival:'1°B',eligibleGrps:['E','F','G','I','J'],        desc:'Grupos E,F,G,I,J'},
+  {id:'r32p',rival:'1°K',eligibleGrps:['D','E','I','J','L'],        desc:'Grupos D,E,I,J,L'},
 ];
 
 function computeM3Steps(pid=null){
-  // Returns full step trace for the M3 view — uses same ranking as getM3Assignment
   const thirds=allThirds(pid);
   const top8=thirds.slice(0,8);
   const used=new Set();
   const result=[];
   for(const slot of M3_SLOTS_DEF){
-    const steps=[];let assigned=null;
-    for(const t of top8){
+    const steps=[];
+    let assigned=null;
+    let isFallback=false;
+
+    // Pass 1: look for eligible third
+    for(const t of thirds){
       if(used.has(t.group)){steps.push({...t,status:'used'});continue;}
       if(!slot.eligibleGrps.includes(t.group)){steps.push({...t,status:'skip'});continue;}
-      steps.push({...t,status:'ok'});assigned=t;used.add(t.group);break;
+      steps.push({...t,status:'ok'});
+      assigned=t;used.add(t.group);break;
     }
-    result.push({slot,steps,assigned});
+
+    // Pass 2: fallback — take best remaining regardless of group
+    if(!assigned){
+      const remaining=thirds.find(t=>!used.has(t.group));
+      if(remaining){
+        steps.push({...remaining,status:'fallback'});
+        assigned=remaining;isFallback=true;used.add(remaining.group);
+      }
+    }
+
+    result.push({slot,steps,assigned,isFallback});
   }
   return {thirds,slots:result};
 }
@@ -841,8 +858,7 @@ function renderM3View(){
   // ── Iteración por slot ──
   html+=`<div class="m3-section-title">Asignación en la Ronda de 32</div>`;
 
-  for(const {slot,steps,assigned} of slots){
-    // Get rival team name
+  for(const {slot,steps,assigned,isFallback} of slots){
     const rivalGroup=slot.rival.replace('1°','');
     const rivalTeam=standing(rivalGroup)[0]?.team||slot.rival;
     html+=`<div class="m3-slot-card">
@@ -851,28 +867,27 @@ function renderM3View(){
         <span class="m3-slot-rival">vs ${slot.rival} — ${fl(rivalTeam)} ${rivalTeam}</span>
       </div>
       <div class="m3-slot-eligible">Acepta terceros de: ${slot.desc}</div>`;
-
     for(const step of steps){
-      let statusIcon,statusText,nameClass='';
-      if(step.status==='used'){statusIcon='⏭';statusText='ya asignado';nameClass='used';}
-      else if(step.status==='skip'){statusIcon='❌';statusText=`grupo ${step.group} no elegible`;}
-      else{statusIcon='✅';statusText=`grupo ${step.group} elegible → ASIGNADO`;}
+      let icon,txt,nc='';
+      if(step.status==='used'){icon='⏭';txt='ya asignado';nc='used';}
+      else if(step.status==='skip'){icon='❌';txt=`grupo ${step.group} no elegible`;}
+      else if(step.status==='fallback'){icon='⚠️';txt='ningún elegible disponible → FALLBACK ASIGNADO';}
+      else{icon='✅';txt=`grupo ${step.group} elegible → ASIGNADO`;}
       html+=`<div class="m3-iter-row">
         <span class="m3-iter-rank">${thirds.findIndex(x=>x.team===step.team)+1}°</span>
         <span class="m3-iter-flag">${fl(step.team)}</span>
-        <span class="m3-iter-name ${nameClass}">${step.team} <span style="color:#aaa;font-size:8px">(3°${step.group}, ${step.pts}pts)</span></span>
-        <span class="m3-iter-status ${step.status}">${statusIcon} ${statusText}</span>
+        <span class="m3-iter-name ${nc}">${step.team} <span style="color:#aaa;font-size:8px">(3°${step.group}, ${step.pts}pts)</span></span>
+        <span class="m3-iter-status ${step.status==='fallback'?'ok':step.status}">${icon} ${txt}</span>
       </div>`;
     }
-
     if(assigned){
-      html+=`<div class="m3-result">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}</div>`;
+      const note=isFallback?` <span style="color:var(--yellow);font-size:9px">⚠️ Asignado por fallback</span>`:'';
+      html+=`<div class="m3-result${isFallback?' sim':''}">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}${note}</div>`;
     }else{
       html+=`<div class="m3-result tbd">→ Sin asignar (faltan resultados de grupos)</div>`;
     }
     html+=`</div>`;
   }
-
   container.innerHTML=html;
 }
 
@@ -918,7 +933,7 @@ function renderM3ViewPred(pid){
   html+=`</tbody></table>`;
 
   html+=`<div class="m3-section-title">Asignación en la Ronda de 32</div>`;
-  for(const {slot,steps,assigned} of slots){
+  for(const {slot,steps,assigned,isFallback} of slots){
     const rivalGroup=slot.rival.replace('1°','');
     const rivalTeam=standing(rivalGroup,pid)[0]?.team||slot.rival;
     html+=`<div class="m3-slot-card">
@@ -931,16 +946,19 @@ function renderM3ViewPred(pid){
       let icon,txt,nc='';
       if(step.status==='used'){icon='⏭';txt='ya asignado';nc='used';}
       else if(step.status==='skip'){icon='❌';txt=`grupo ${step.group} no elegible`;}
+      else if(step.status==='fallback'){icon='⚠️';txt='ningún elegible disponible → FALLBACK ASIGNADO';}
       else{icon='✅';txt=`grupo ${step.group} elegible → ASIGNADO`;}
       html+=`<div class="m3-iter-row">
         <span class="m3-iter-rank">${thirds.findIndex(x=>x.team===step.team)+1}°</span>
         <span class="m3-iter-flag">${fl(step.team)}</span>
         <span class="m3-iter-name ${nc}">${step.team} <span style="color:#aaa;font-size:8px">(3°${step.group}, ${step.pts}pts)</span></span>
-        <span class="m3-iter-status ${step.status}">${icon} ${txt}</span>
+        <span class="m3-iter-status ${step.status==='fallback'?'ok':step.status}">${icon} ${txt}</span>
       </div>`;
     }
-    if(assigned) html+=`<div class="m3-result">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}</div>`;
-    else html+=`<div class="m3-result tbd">→ Sin asignar (faltan resultados)</div>`;
+    if(assigned){
+      const note=isFallback?` <span style="color:var(--yellow);font-size:9px">⚠️ Asignado por fallback</span>`:'';
+      html+=`<div class="m3-result${isFallback?' sim':''}">→ ${fl(assigned.team)} ${assigned.team} (3°${assigned.group}) juega vs ${slot.rival} ${fl(rivalTeam)} ${rivalTeam}${note}</div>`;
+    }else html+=`<div class="m3-result tbd">→ Sin asignar (faltan resultados)</div>`;
     html+=`</div>`;
   }
   container.innerHTML=html;
